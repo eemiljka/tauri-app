@@ -1,38 +1,17 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef } from "react";
 
-import * as faceapi from "face-api.js";
 import Camera from "@/components/Camera";
+import { useFaceDetection } from "@/hooks/FaceHooks";
 
 const DetectFace: React.FC = () => {
   const videoRef = useRef<HTMLVideoElement>(null); // Reference to the video element
-  const [detection, setDetection] = useState<faceapi.FaceDetection | null>(
-    null
-  ); // Detected face
-
+  const { detection, getDescriptors } = useFaceDetection();
   useEffect(() => {
     let timer: ReturnType<typeof setTimeout> | null = null;
 
-    // Load the face detection models
-    const loadModels = async () => {
-      try {
-        await faceapi.nets.tinyFaceDetector.loadFromUri("/models");
-        console.log("Models loaded");
-      } catch (error) {
-        console.error("Error loading models:", error);
-      }
-    };
-
     // Detect face from video frames
     const detectFace = async () => {
-      if (videoRef.current) {
-        const result = await faceapi.detectSingleFace(
-          videoRef.current,
-          new faceapi.TinyFaceDetectorOptions()
-        );
-
-        setDetection(result || null); // Update detection state
-      }
-
+      getDescriptors(videoRef);
       // Schedule the next detection
       timer = setTimeout(detectFace, 100);
     };
@@ -54,33 +33,34 @@ const DetectFace: React.FC = () => {
       }
     };
 
-    loadModels().then(startDetection); // Load models and start detection
-
+    startDetection();
     // Cleanup on unmount
     return () => {
       if (timer) clearTimeout(timer);
     };
   }, []);
 
+  console.log("detection object: ", detection);
+
   return (
-    <div
-      style={{ textAlign: "center", marginTop: "20px", position: "relative" }}
-    >
+    <div style={{ textAlign: "center", marginTop: "20px" }}>
       <h1>Face Detection</h1>
-      <Camera ref={videoRef} width={800} aspect={16 / 9} />
-      {detection && (
-        <div
-          style={{
-            position: "absolute",
-            top: detection.box.y,
-            left: detection.box.x,
-            width: detection.box.width,
-            height: detection.box.height,
-            border: "2px solid red",
-            pointerEvents: "none",
-          }}
-        ></div>
-      )}
+      <div style={{ position: "relative" }}>
+        <Camera ref={videoRef} width={800} aspect={16 / 9} />
+        {detection && (
+          <div
+            style={{
+              position: "absolute",
+              top: detection.box.y,
+              left: detection.box.x,
+              width: detection.box.width,
+              height: detection.box.height,
+              border: "2px solid red",
+              pointerEvents: "none",
+            }}
+          ></div>
+        )}
+      </div>
     </div>
   );
 };
