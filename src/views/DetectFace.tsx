@@ -15,9 +15,10 @@ const DetectFace: React.FC = () => {
     // Detect face from video frames
     const detectFace = async () => {
       try {
-        const descriptors = await getDescriptors(videoRef);
-        if (descriptors) {
-          navigate("/detected", { state: { descriptors } });
+        const descriptorsResult = await getDescriptors(videoRef);
+        // matchface
+        if (descriptorsResult) {
+          navigate("/detected", { state: descriptorsResult.descriptors });
         }
         await getDescriptors(videoRef);
       } catch (error) {
