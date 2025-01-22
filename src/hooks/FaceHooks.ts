@@ -42,14 +42,16 @@ const useFaceDetection = () => {
 
         setDetection(result.detection);
 
-        return labeledDescriptor;
+        return {result, labeledDescriptor};
     };
 
-    const matchFace = async (currentDescriptors, descriptorsFromDB) => {
+    const matchFace = async (currentDescriptors: Float32Array, descriptorsFromDB: Float32Array[]) => {
       if(descriptorsFromDB && descriptorsFromDB.length > 0) {
-        const faceMatcher = new faceapi.FaceMatcher(descriptorsFromDB);
+        const faceMatcher = new faceapi.FaceMatcher(descriptorsFromDB.map((descriptor) => {
+          return faceapi.LabeledFaceDescriptors.fromJSON(descriptor)
+        }));
 
-        return faceMatcher.matchDescriptor(currentDescriptors.descriptor);
+        return faceMatcher.matchDescriptor(currentDescriptors);
       }
     }
 
