@@ -21,7 +21,9 @@ const useGestureRecognition = (videoRef: RefObject<HTMLVideoElement>) => {
             if (videoRef.current && gestureRecognizer) {
                 const nowInMs = Date.now();
                 const results = gestureRecognizer.recognizeForVideo(videoRef.current, nowInMs);
-                console.log(results);
+                if(results.gestures.length > 0) {
+                console.log(results.gestures[0][0].categoryName);
+                }
           }
           timer = setTimeout(processVideoFrames, 100);
         }
